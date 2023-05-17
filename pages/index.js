@@ -6,6 +6,7 @@ import AutoComplete from '@/components/AutoComplete';
 
 
 export default function Home() {
+  // Real time Weather: holds real time weather object
   const [rTWeather, setRTWeather] = useState(null);
 
   // search: the current search string typed by the user
