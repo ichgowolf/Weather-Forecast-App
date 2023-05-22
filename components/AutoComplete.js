@@ -76,7 +76,7 @@ export default function AutoComplete({ search, setSearch, suggestions, setSugges
       />
       {(isInputFocused || isListHovered) && suggestions && suggestions.length > 0 && (
         <ul 
-          className='bg-gray-300 max-w-fit fixed' 
+          className='bg-gray-300 max-w-fit absolute z-40 ' 
           onMouseEnter={() => setListHovered(true)}
           onMouseLeave={() => {setListHovered(false); if (!isInputFocused) {setInputFocus(false);}}}
         >

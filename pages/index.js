@@ -91,7 +91,7 @@ export default function Home() {
         {/* <button className='bg-blue-600 text-white' onClick={handleSearchClick}>Search</button> */}
       </div>
 
-      <div className='min-w-[100%] grid grid-cols-3 gap-4'>
+      <div className='cards min-w-[100%] grid lg:grid-cols-3 gap-4 md:grid-cols-2'>
       {rTWeatherData.map((rTWeather, index) => (
         <WeatherCard key={index} rTWeather={rTWeather} onDelete={() => deleteCard(index)} />
       ))}
