@@ -1,62 +1,103 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import AutoComplete from '@/components/AutoComplete';
+import WeatherCard from '@/components/WeatherCard';
+
+
 
 // TODO Default search currently London se default to look at user ip and default by ip address
 
 
 export default function Home() {
   // Real time Weather: holds real time weather object
-  const [rTWeather, setRTWeather] = useState(null);
+  const [rTWeatherData, setRTWeatherData] = useState([]);
+
 
   // search: the current search string typed by the user
-  const [search, setSearch] = useState('London');
+  const [search, setSearch] = useState('');
+
+  // location: string received by user event such as button press or keydown
+  const [location, setLocation] = useState('')
 
   // suggestions: the list of suggestions returned by the Places API
   const [suggestions, setSuggestions] = useState([]);
+
+  // firstRender: stops app from rendering twice on start up
+  const [firstRender, setFirstRender] = useState(true);
+
 
   //  Function for button
   // const handleSearchClick = () => {
   //   setSearch(search);
   // };
+  
+  // 
+  const deleteCard = (index) => {
+    const newRTWeatherData = [...rTWeatherData];
+    newRTWeatherData.splice(index, 1);
+    setRTWeatherData(newRTWeatherData);
+
+  }
+
+  
+
+  /**
+ * useEffect hook
+ * Runs when the search string changes.
+ * Sends a request to the API to get Ip address
+ */
+  useEffect(() => {
+    axios
+      .get(`/api/getIp/`)
+      .then((response) => {
+        setLocation(response.data.ip)
+        console.log(response.data.ip)
+      })
+  }, []);
 
 
   /**
  * useEffect hook
  * Runs when the search string changes.
- * Sends a request to the API to get new suggestions based on the current search string.
+ * Sends a request to the API to get Real time weather data
  * TODO Change to run only when user hits enter or selects a location
  */
   useEffect(() => {
-    axios
-      .get(`/api/weather?location=${search}`)
-      .then((response) => {
-        setRTWeather(response.data);
-        // console.log(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, [search]);
+    if (!firstRender) {
+      axios
+        .get(`/api/weather?location=${location}`)
+        .then((response) => {
+          if (!rTWeatherData.find(item => item.location.name === response.data.location.name)) {
+            setRTWeatherData(prev => [...prev, response.data]);
+          }
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      setFirstRender(false);
+    }
+  }, [location]);
 
-  if (rTWeather === null) {
-    return <div>Loading...</div>;
-  }
+
 
   return (
 
-    <div className='flex flex-col items-center justify-center h-screen'>
-      <div>
-        <h1>Country: {rTWeather.location.country}</h1>
-        <h1>Location: {rTWeather.location.name}, {rTWeather.location.region}</h1>
-        <h1>Temperature: {rTWeather.current.temp_c} degrees Celsius</h1>
-        {console.log(rTWeather)}
-      </div>
-      <div className='w-full sm:w-1/4 flex flex-col items-center mr-4'>
-        <AutoComplete search={search} setSearch={setSearch} suggestions={suggestions} setSuggestions={setSuggestions} />
+    <div className='app'>
+      <h1 className='  text-4xl font-bold text-cyan-300'>SkyScribe</h1>
+      <div className='search'>
+        <AutoComplete search={search} setSearch={setSearch} suggestions={suggestions} setSuggestions={setSuggestions} location={location} setLocation={setLocation} />
         {/* <button className='bg-blue-600 text-white' onClick={handleSearchClick}>Search</button> */}
       </div>
 
+      <div className='min-w-[100%] grid grid-cols-3 gap-4'>
+      {rTWeatherData.map((rTWeather, index) => (
+        <WeatherCard key={index} rTWeather={rTWeather} onDelete={() => deleteCard(index)} />
+      ))}
     </div>
+  </div>
+
+
   );
 }
